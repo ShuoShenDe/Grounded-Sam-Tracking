@@ -167,6 +167,18 @@ If you would like to allow visualization across docker container, open another t
 xhost +
 ```
 
+```
+docker run --gpus all -d --rm --net=host --privileged \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v "${PWD}":/home/appuser/Grounded-Segment-Anything \
+    -v /home/ubuntu/Documents/EFS/Labeling/Denso/:/home/ubuntu/Documents/EFS/Labeling/Denso/ \
+    -e DISPLAY=$DISPLAY \
+    --name=gsa \
+    --ipc=host gsa:v0 \
+    /bin/bash -c "cd /home/appuser/Grounded-Segment-Anything/ && python grounded_sam_demo_batch.py > output.log 2>&1 && echo 'Script finished, exiting container.'"
+
+```
+
 
 ### Install without Docker
 You should set the environment variable manually as follows if you want to build a local GPU environment for Grounded-SAM:
@@ -782,3 +794,8 @@ If you find this project helpful for your research, please consider citing the f
       primaryClass={cs.CV}
 }
 ```
+
+
+# Record
+trip_name | box_threshold | text_threshold
+20240613_101744_1 | 0.25| 0.25

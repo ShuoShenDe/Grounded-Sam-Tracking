@@ -7,6 +7,7 @@ import numpy as np
 import json
 import torch
 from PIL import Image
+import gc
 
 sys.path.append(os.path.join(os.getcwd(), "GroundingDINO"))
 sys.path.append(os.path.join(os.getcwd(), "segment_anything"))
@@ -118,7 +119,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, output_file_name
     plt.imshow(mask_img.numpy())
     plt.axis('off')
     plt.savefig(os.path.join(output_dir, output_file_name), bbox_inches="tight", dpi=300, pad_inches=0.0)
-
+    plt.close('all')
     json_data = [{
         'value': value,
         'label': 'background'
@@ -136,6 +137,42 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, output_file_name
     with open(os.path.join(output_dir, output_file_name.split(".")[0]+'.json'), 'w') as f:
         json.dump(json_data, f)
 
+def save_mask_data2(output_dir, mask_list, box_list, label_list, output_file_name="mask.jpg"):
+    value = 0  # 0 for background
+
+    mask_img = torch.zeros(mask_list.shape[-2:])
+    for idx, mask in enumerate(mask_list):
+        mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
+
+    # plt.savefig(os.path.join(output_dir, output_file_name), bbox_inches="tight", dpi=300, pad_inches=0.0)
+    np.save(os.path.join(output_dir, output_file_name), mask_img.numpy())
+    json_data = {
+        "image_name": output_file_name,
+        "image_height":mask_img.shape[0],
+        "image_width":mask_img.shape[1]
+    }
+
+    anno_2d = [{
+        'instance_id': value,
+        'class_name': 'background'
+    }]
+    for label, box in zip(label_list, box_list):
+        value += 1
+        name, logit = label.split('(')
+        logit = logit[:-1] # the last is ')'
+        box = box.numpy().tolist()
+        anno_2d.append({
+            'instance_id': value,
+            'class_name': name,
+            'class_score': float(logit),
+            'x1': box[0],
+            'y1': box[1],
+            'x2': box[2],
+            'y2': box[3]
+        })
+    json_data["anno_2d"] = anno_2d
+    with open(os.path.join(output_dir, output_file_name.split(".")[0]+'.json'), 'w') as f:
+        json.dump(json_data, f)
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -146,16 +183,14 @@ if __name__ == "__main__":
     sam_checkpoint = "./sam_hq_vit.pth"
     sam_hq_checkpoint = "./sam_hq_vit_h.pth"
     use_sam_hq = True
-    image_dir = "test_data/sms_left"
-    text_prompt = "License Plate"
-    output_dir = "outputs"
-    box_threshold = 0.3
-    text_threshold = 0.3
+    image_root = "/home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_4"
+    text_prompt = "car.pole.pedestrian.van."
+    output_root = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_4"
+    box_threshold = 0.25
+    text_threshold = 0.25
     device = "cuda"
     print(box_threshold, text_threshold)
-    print("image_dir", image_dir)
-    # make dir
-    os.makedirs(output_dir, exist_ok=True)
+    
     # load model
     model = load_model(config_file, grounded_checkpoint, device=device)
     # initialize SAM
@@ -164,56 +199,69 @@ if __name__ == "__main__":
     else:
         predictor = SamPredictor(sam_model_registry[sam_version](checkpoint=sam_checkpoint).to(device))
     # load image
-    
-    for index, image_name in enumerate(os.listdir(image_dir)):
-        image_path = os.path.join(image_dir, image_name)
-        image_pil, image = load_image(image_path)
-        image_full_name = image_name.split(".")[0]
-        image_appendix = image_name.split(".")[1]
-        # visualize raw image
-        image_pil.save(os.path.join(output_dir, "{}_{}_{}.{}".format(image_full_name, "_raw",str(index),image_appendix)))
+    for sensor_name in os.listdir(image_root):
+        image_dir = os.path.join(image_root, sensor_name)
+        print("image_dir", image_dir)
+        output_dir = os.path.join(output_root, sensor_name)
+        print("output_dir", output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        for index, image_name in enumerate(os.listdir(image_dir)):
+            image_path = os.path.join(image_dir, image_name)
+            image_pil, image = load_image(image_path)
+            image_full_name = image_name.split(".")[0]
+            image_appendix = image_name.split(".")[1]
+            # visualize raw image
+            # image_pil.save(os.path.join(output_dir, "{}_{}_{}.{}".format(image_full_name, "_raw",str(index),image_appendix)))
 
-        # run grounding dino model
-        boxes_filt, pred_phrases = get_grounding_output(
-            model, image, text_prompt, box_threshold, text_threshold, device=device
-        )
+            # run grounding dino model
+            boxes_filt, pred_phrases = get_grounding_output(
+                model, image, text_prompt, box_threshold, text_threshold, device=device
+            )
 
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        predictor.set_image(image)
+            image = cv2.imread(image_path)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            predictor.set_image(image)
 
-        size = image_pil.size
-        H, W = size[1], size[0]
-        for i in range(boxes_filt.size(0)):
-            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-            boxes_filt[i][2:] += boxes_filt[i][:2]
+            size = image_pil.size
+            H, W = size[1], size[0]
+            for i in range(boxes_filt.size(0)):
+                boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+                boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+                boxes_filt[i][2:] += boxes_filt[i][:2]
 
-        boxes_filt = boxes_filt.cpu()
-        transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
-        print("transformed_boxes", transformed_boxes.shape)
-        if transformed_boxes.size(0) == 0:
-            continue
-        masks, _, _ = predictor.predict_torch(
-            point_coords = None,
-            point_labels = None,
-            boxes = transformed_boxes.to(device),
-            multimask_output = False,
-        )
-        
-        # draw output image
-        plt.figure(figsize=(10, 10))
-        plt.imshow(image)
-        for mask in masks:
-            show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
-        for box, label in zip(boxes_filt, pred_phrases):
-            show_box(box.numpy(), plt.gca(), label)
+            boxes_filt = boxes_filt.cpu()
+            transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+            # print("transformed_boxes", transformed_boxes.shape)
+            if transformed_boxes.size(0) == 0:
+                print("{} frame {} nothing recognized".format(index, image_full_name))
+                continue
+            masks, _, _ = predictor.predict_torch(
+                point_coords = None,
+                point_labels = None,
+                boxes = transformed_boxes.to(device),
+                multimask_output = False,
+            )
+            
+            # draw output image
+            plt.figure(figsize=(10, 10))
+            plt.imshow(image)
+            for mask in masks:
+                show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+            for box, label in zip(boxes_filt, pred_phrases):
+                show_box(box.numpy(), plt.gca(), label)
 
-        plt.axis('off')
-        plt.savefig(
-            os.path.join(output_dir, "grounded_sam_output_{}.jpg".format(index)),
-            bbox_inches="tight", dpi=300, pad_inches=0.0
-        )
+            plt.axis('off')
+            plt.savefig(
+                os.path.join(output_dir, "grounded_sam_output_{}.jpg".format(image_full_name)),
+                bbox_inches="tight", dpi=300, pad_inches=0.0
+            )
 
-        save_mask_data(output_dir, masks, boxes_filt, pred_phrases, output_file_name=f"mask_{str(index)}.jpg")
-        print("Total Time taken: ", time.time() - start_time)
+            save_mask_data2(output_dir, masks, boxes_filt, pred_phrases, output_file_name=f"mask_{str(image_full_name)}.npy")
+            print(index,"Total Time taken: ", time.time() - start_time)
+            plt.close('all')  # 关闭所有的figure以释放内存
+            if index%20 == 0:
+                # Call the garbage collector
+                gc.collect()
+                # Empty the PyTorch cache
+                torch.cuda.empty_cache()
+                print("cleaning")

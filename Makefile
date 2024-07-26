@@ -38,6 +38,7 @@ endif
 	docker run --gpus all -it --rm --net=host --privileged \
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	-v "${PWD}":/home/appuser/Grounded-Segment-Anything \
+	-v /home/ubuntu/Documents/EFS/Labeling/Denso/:/home/ubuntu/Documents/EFS/Labeling/Denso/ \
 	-e DISPLAY=$DISPLAY \
 	--name=gsa \
 	--ipc=host -it gsa:v0
