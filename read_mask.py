@@ -7,8 +7,9 @@ def load_mask_data(filepath):
     return mask_img
 
 # read mask data
-mask_filepath = 'outputs/mask.npy'  
+mask_filepath = 'mask_1718267167846453000.npy'  
 mask_img = load_mask_data(mask_filepath)
+print(mask_img[0], type(mask_img[0]))
 
 
 # show final images

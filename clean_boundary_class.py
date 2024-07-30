@@ -16,9 +16,10 @@ def read_json_file(file_path):
         data = json.load(file)
     return data
 
-if __name__ == "__main__":
-    root_path = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_4"
-    new_path = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain_clean/20240613_101744_4/"
+
+def clean_boundary_class():
+    root_path = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_6"
+
     sensor_names = os.listdir(root_path)
 
     for sensor_name in sensor_names:
@@ -37,7 +38,7 @@ if __name__ == "__main__":
             data = read_json_file(json_file)
             remove_values = []
             for box in data["anno_2d"]:
-                if box["instance_id"] == 0:
+                if box["instance_id"] == "0":
                     anno_2d.append(box)
                     continue
                 elif box["y2"] > 1077:
@@ -60,12 +61,15 @@ if __name__ == "__main__":
                 new_img_path = image_path.replace("/pretrain/", "/pretrain_clean/")
                 img_array = np.load(image_path)
                 # Convert the image to a numpy array
-                unique_values = np.unique(img_array)
-                print("unique_values", unique_values)
+                remove_value = np.dtype(img_array.dtype).type(remove_value)
+                print("remove_value", remove_value)
                 img_array[img_array == remove_value] = 0
-                unique_values = np.unique(img_array)
-                print("new unique_values", unique_values)
-                np.save(new_img_path, img_array)
+                np.save(new_img_path, img_array.astype(np.uint16))
                     # print('Saved modified image to {}'.format(new_img_path))
         
        #  break
+
+
+
+if __name__ == "__main__":
+    clean_boundary_class()
