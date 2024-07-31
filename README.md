@@ -44,11 +44,11 @@ docker run --gpus all -d --rm --net=host --privileged \
 docker run --gpus all -d --rm --net=host --privileged \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "${PWD}":/home/appuser/Grounded-Segment-Anything \
-    -v /home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_6:/tmp/shuo/input \
-    -v /home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_6:/tmp/shuo/output \
+    -v /home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_1:/tmp/shuo/input \
+    -v /home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_1:/tmp/shuo/output \
     -e DISPLAY=$DISPLAY \
     --name=ground_sam \
-    --ipc=host susanshende/ground_sam:v0.1
+    --ipc=host susanshende/ground_sam:v0.2 -i /tmp/shuo/input -o /tmp/shuo/output --box_threshold 0.2
 
 ```
 

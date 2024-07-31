@@ -175,7 +175,7 @@ if __name__ == "__main__":
     sam_hq_checkpoint = args.sam_hq_checkpoint
     use_sam_hq = args.use_sam_hq
     image_path = args.input_image
-    text_prompt = args.text_prompt
+    text_prompt =   # args.text_prompt
     output_dir = args.output_dir
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold

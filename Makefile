@@ -27,7 +27,7 @@ build-image:
 	@echo $(BUILD_MESSAGE)
 	docker build --build-arg USE_CUDA=$(USE_CUDA) \
 	--build-arg TORCH_ARCH=$(TORCH_CUDA_ARCH_LIST) \
-	-t susanshende/ground_sam:v0.1 .
+	-t gsa:v0 .
 run:
 ifeq (,$(wildcard ./sam_vit_h_4b8939.pth))
 	wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth

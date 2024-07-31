@@ -153,9 +153,9 @@ if __name__ == "__main__":
     parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.3, help="text threshold")
     parser.add_argument(
-        "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
+        "--output_dir", "-o", type=str, help="output directory"
     )
-    parser.add_argument("--input_dir", "-i", type=str, required=True, help="path to image file")
+    parser.add_argument("--input_dir", "-i", type=str,  help="path to image file")
 
     args = parser.parse_args()
     if args.box_threshold:
@@ -167,11 +167,11 @@ if __name__ == "__main__":
     if args.input_dir:
         input_dir = args.input_dir
     else:
-        input_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_4"
+        input_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_1/sms_front"
     if args.output_dir:
         output_dir = args.output_dir
     else:
-        output_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_4"
+        output_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_1/sms_front"
 
     print("box_threshold", box_threshold, "text_threshold", text_threshold)
     print("input_dir", input_dir, "output_dir", output_dir)
@@ -197,73 +197,66 @@ if __name__ == "__main__":
     else:
         predictor = SamPredictor(sam_model_registry[sam_version](checkpoint=sam_checkpoint).to(device))
     # load image
-    for sensor_name in os.listdir(input_dir):
-        image_dir = os.path.join(input_dir, sensor_name)
-        print("image_dir", image_dir)
-        output_path = os.path.join(output_dir, sensor_name)
-        print("output_path", output_path)
-        os.makedirs(output_path, exist_ok=True)
-        for index, image_name in enumerate(os.listdir(image_dir)):
-            image_path = os.path.join(image_dir, image_name)
-            image_pil, image = load_image(image_path)
-            image_full_name = image_name.split(".")[0]
-            image_appendix = image_name.split(".")[1]
-            # visualize raw image
-            # image_pil.save(os.path.join(output_path, "{}_{}_{}.{}".format(image_full_name, "_raw",str(index),image_appendix)))
 
-            # run grounding dino model
-            boxes_filt, pred_phrases = get_grounding_output(
-                model, image, text_prompt, box_threshold, text_threshold, device=device
-            )
+    for index, image_name in enumerate(os.listdir(input_dir)):
+        image_path = os.path.join(input_dir, image_name)
+        image_pil, image = load_image(image_path)
+        image_full_name = image_name.split(".")[0]
+        image_appendix = image_name.split(".")[1]
+        # visualize raw image
+        # image_pil.save(os.path.join(output_path, "{}_{}_{}.{}".format(image_full_name, "_raw",str(index),image_appendix)))
 
-            image = cv2.imread(image_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            predictor.set_image(image)
+        # run grounding dino model
+        boxes_filt, pred_phrases = get_grounding_output(
+            model, image, text_prompt, box_threshold, text_threshold, device=device
+        )
+        print(pred_phrases)
+        print(len(boxes_filt))
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        predictor.set_image(image)
 
-            size = image_pil.size
-            H, W = size[1], size[0]
-            for i in range(boxes_filt.size(0)):
-                boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-                boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-                boxes_filt[i][2:] += boxes_filt[i][:2]
+        size = image_pil.size
+        H, W = size[1], size[0]
+        for i in range(boxes_filt.size(0)):
+            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+            boxes_filt[i][2:] += boxes_filt[i][:2]
 
-            boxes_filt = boxes_filt.cpu()
-            transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
-            # print("transformed_boxes", transformed_boxes.shape)
-            if transformed_boxes.size(0) == 0:
-                print("{} frame {} nothing recognized".format(index, image_full_name))
-                continue
-            masks, _, _ = predictor.predict_torch(
-                point_coords = None,
-                point_labels = None,
-                boxes = transformed_boxes.to(device),
-                multimask_output = False,
-            )
-            
-            # draw output image
-            plt.figure(figsize=(10, 10))
-            plt.imshow(image)
-            for mask in masks:
-                show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
-            for box, label in zip(boxes_filt, pred_phrases):
-                show_box(box.numpy(), plt.gca(), label)
+        boxes_filt = boxes_filt.cpu()
+        transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+        # print("transformed_boxes", transformed_boxes.shape)
+        if transformed_boxes.size(0) == 0:
+            print("{} frame {} nothing recognized".format(index, image_full_name))
+            continue
+        masks, _, _ = predictor.predict_torch(
+            point_coords = None,
+            point_labels = None,
+            boxes = transformed_boxes.to(device),
+            multimask_output = False,
+        )
+        
+        # draw output image
+        plt.figure(figsize=(10, 10))
+        plt.imshow(image)
+        for mask in masks:
+            show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+        for box, label in zip(boxes_filt, pred_phrases):
+            show_box(box.numpy(), plt.gca(), label)
 
-            plt.axis('off')
-            plt.savefig(
-                os.path.join(output_path, "grounded_sam_output_{}.jpg".format(image_full_name)),
-                bbox_inches="tight", dpi=300, pad_inches=0.0
-            )
+        plt.axis('off')
+        plt.savefig(
+            os.path.join(output_dir, "grounded_sam_output_{}.jpg".format(image_full_name)),
+            bbox_inches="tight", dpi=300, pad_inches=0.0
+        )
 
-            save_mask_data2(output_path, masks, boxes_filt, pred_phrases, output_file_name=f"mask_{str(image_full_name)}.npy")
-            print(index,"Total Time taken: ", time.time() - start_time)
-            plt.close('all')  # 关闭所有的figure以释放内存
+        save_mask_data2(output_dir, masks, boxes_filt, pred_phrases, output_file_name=f"mask_{str(image_full_name)}.npy")
+        print(index,"Total Time taken: ", time.time() - start_time)
+        plt.close('all')  # 关闭所有的figure以释放内存
 
-            # 手动删除变量以释放内存
-            del image_pil, image, transformed_boxes, masks, boxes_filt, pred_phrases
-            
-            if index%20 == 0:
-                # Call the garbage collector
-                gc.collect()
-                # Empty the PyTorch cache
-                torch.cuda.empty_cache()
-                print("cleaning")
+        if index%10 == 0:
+            # Call the garbage collector
+            gc.collect()
+            # Empty the PyTorch cache
+            torch.cuda.empty_cache()
+            print("cleaning")
