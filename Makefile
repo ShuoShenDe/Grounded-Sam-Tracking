@@ -27,7 +27,7 @@ build-image:
 	@echo $(BUILD_MESSAGE)
 	docker build --build-arg USE_CUDA=$(USE_CUDA) \
 	--build-arg TORCH_ARCH=$(TORCH_CUDA_ARCH_LIST) \
-	-t gsa:v0 .
+	-t 295313735635.dkr.ecr.cn-north-1.amazonaws.com.cn/sam_tracking:v0.1 .
 run:
 ifeq (,$(wildcard ./sam_vit_h_4b8939.pth))
 	wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
@@ -39,6 +39,23 @@ endif
 	-v /tmp/.X11-unix:/tmp/.X11-unix \
 	-v "${PWD}":/home/appuser/Grounded-Segment-Anything \
 	-v /home/ubuntu/Documents/EFS/Labeling/Denso/:/home/ubuntu/Documents/EFS/Labeling/Denso/ \
+	-v /media/NAS/sd_nas_01/shuo/denso_data:/media/NAS/sd_nas_01/shuo/denso_data/ \
 	-e DISPLAY=$DISPLAY \
 	--name=gsa \
 	--ipc=host -it gsa:v0
+
+run_sam:
+ifeq (,$(wildcard ./sam_vit_h_4b8939.pth))
+	wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+endif
+ifeq (,$(wildcard ./groundingdino_swint_ogc.pth))
+	wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth
+endif
+	docker run --gpus all -it --net=host --privileged \
+	-v /tmp/.X11-unix:/tmp/.X11-unix \
+	-v "${PWD}":/home/appuser/Grounded-Segment-Anything \
+	-v /home/ubuntu/Documents/EFS/Labeling/Denso/:/home/ubuntu/Documents/EFS/Labeling/Denso/ \
+	-v /media/NAS/sd_nas_01/shuo/denso_data:/media/NAS/sd_nas_01/shuo/denso_data/ \
+	-e DISPLAY=$DISPLAY \
+	--name=gsa \
+	--ipc=host -it 295313735635.dkr.ecr.cn-north-1.amazonaws.com.cn/sam_tracking:v0.1

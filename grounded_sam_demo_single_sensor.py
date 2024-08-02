@@ -150,7 +150,7 @@ def save_mask_data2(output_dir, mask_list, box_list, label_list, output_file_nam
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Grounded-Segment-Anything Batch", add_help=True)
-    parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
+    parser.add_argument("--box_threshold", type=float, default=0.2, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.3, help="text threshold")
     parser.add_argument(
         "--output_dir", "-o", type=str, help="output directory"
@@ -167,11 +167,11 @@ if __name__ == "__main__":
     if args.input_dir:
         input_dir = args.input_dir
     else:
-        input_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/raw_data/20240613_101744_1/sms_front"
+        input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/test_front/test_short_data"
     if args.output_dir:
         output_dir = args.output_dir
     else:
-        output_dir = "/home/ubuntu/Documents/EFS/Labeling/Denso/pretrain/20240613_101744_1/sms_front"
+        output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/test_front/test_short_data_mask"
 
     print("box_threshold", box_threshold, "text_threshold", text_threshold)
     print("input_dir", input_dir, "output_dir", output_dir)
