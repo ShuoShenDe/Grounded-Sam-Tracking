@@ -22,41 +22,25 @@ This project aims to integrate cutting-edge technologies in computer vision and 
 
 # prepare
 prepare the images data as the follow rules:
-/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/raw_data
+/your_own_path/raw_data
 
-where sms_front is sensor name, raw_data is fixed
+where raw_data is fixed
 
 ***note***
 Now the data is located under the path: /media/NAS/sd_nas_01/shuo/denso_data/ (because this is the only volume of the container ca9bb3230d4e)
 
 # Step 1 : Open the env
-Now it only works on 8090
+You could use the dockerfile, and create environment as [Grounded-SAM](https://github.com/IDEA-Research/Grounded-Segment-Anything.git)
 
-```
-docker exec -it ca9bb3230d4e /bin/bash
+``
 
 cd /home/appuser/Grounded-Segment-Anything
 ```
 # Step 2: Run Code
-```
-python run_long_trip_to_tracking.py 
-```
 
-# What you can change in the code
-
-*** 1. input_dir ***
-Please change `input_dir`,   `output_dir`, `trip_length`, `box_threshold`
+Then command example:
 ```
-    input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/raw_data"
-    output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/"
-    trip_length = 50
-    box_threshold = 0.23
-
-```
-
-Then the code will automatically run the following command:
-```
-python grounded_sam_with_sam_tracking.py -i /media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/0 -o /media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/ --box_threshold 0.23
+python grounded_sam_with_sam_tracking.py -i /your_path_to_data/raw_data -o /your_path_to_data/ --box_threshold 0.23
 
 ```
 
@@ -64,6 +48,10 @@ If you wan to see the result of pretraining, please run:
 ```
 python draw_raw_image_and_box.py
 ```
+
+# 💘 Acknowledgements
+[Grounded-SAM](https://github.com/IDEA-Research/Grounded-Segment-Anything.git)
+[Segment-anything-2](https://github.com/facebookresearch/segment-anything-2.git)
 
 
 
