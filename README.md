@@ -29,7 +29,7 @@ where raw_data is fixed
 # Step 1 : Open the env
 You could use the dockerfile, and create environment as [Grounded-SAM](https://github.com/IDEA-Research/Grounded-Segment-Anything.git)
 
-``
+```
 
 cd /home/appuser/Grounded-Segment-Anything
 ```
