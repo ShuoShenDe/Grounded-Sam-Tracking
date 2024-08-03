@@ -1,3 +1,25 @@
+# Why built this project
+
+I created a project with the purpose of using Grounded-DINO, SAM (Segment Anything Model), and tracking algorithms to achieve text-prompt-based object recognition and continuous tracking in videos. This combination allows for precise and efficient identification and tracking of objects within video content based on textual descriptions.
+
+Objectives:
+
+	1.	Text-Prompt Based Object Recognition:
+	•	Utilize Grounded-DINO to interpret and understand textual prompts for object identification within video frames.
+	2.	Segmentation and Analysis:
+	•	Implement SAM (Segment Anything Model) to accurately segment and analyze objects in video frames based on the prompts provided.
+	3.	Continuous Object Tracking:
+	•	Apply sam2 tracking algorithms to maintain and follow the identified objects throughout the video, ensuring consistent and reliable tracking over time.
+
+Benefits:
+
+	•	Efficiency: Streamline the process of object recognition and tracking by leveraging state-of-the-art models.
+	•	Accuracy: Enhance the precision of object identification and tracking through advanced segmentation techniques.
+	•	Automation: Enable automated monitoring and analysis of video content based on textual descriptions, reducing the need for manual intervention.
+
+This project aims to integrate cutting-edge technologies in computer vision and natural language processing to create a robust system for video content analysis and tracking.
+
+
 # prepare
 prepare the images data as the follow rules:
 /media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/raw_data
