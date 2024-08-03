@@ -26,9 +26,6 @@ prepare the images data as the follow rules:
 
 where raw_data is fixed
 
-***note***
-Now the data is located under the path: /media/NAS/sd_nas_01/shuo/denso_data/ (because this is the only volume of the container ca9bb3230d4e)
-
 # Step 1 : Open the env
 You could use the dockerfile, and create environment as [Grounded-SAM](https://github.com/IDEA-Research/Grounded-Segment-Anything.git)
 
