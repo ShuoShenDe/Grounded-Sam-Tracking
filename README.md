@@ -46,6 +46,10 @@ If you wan to see the result of pretraining, please run:
 python draw_raw_image_and_box.py
 ```
 
+#Result
+[![Original_Video](assets/frame_0001.png)](assets/tracking_video.mp4)
+[![Tracking_Result_Demo](assets/tracking_output_frame_0001.png)](assets/tracking_output_video.mp4)
+
 # 💘 Acknowledgements
 [Grounded-SAM](https://github.com/IDEA-Research/Grounded-Segment-Anything.git)
 [Segment-anything-2](https://github.com/facebookresearch/segment-anything-2.git)
