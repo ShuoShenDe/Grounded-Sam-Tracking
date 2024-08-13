@@ -332,7 +332,7 @@ if __name__ == "__main__":
     config_file = "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"  # change the path of the model config file
     grounded_checkpoint = "groundingdino_swint_ogc.pth"  # change the path of the model
 
-    text_prompt = "Bus lane marking"  # c 
+    text_prompt = "car.pole.van.pedestrian."  # c
     
     device = "cuda"
     # 每10个执行一次
