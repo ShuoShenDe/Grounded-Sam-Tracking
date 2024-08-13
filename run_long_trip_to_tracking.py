@@ -4,8 +4,10 @@ import os
 import shutil
 
 if __name__ == "__main__":
-    input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/raw_data"
-    output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/"
+    #input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/raw_data"
+    input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_1/sms_rear/raw_data"
+    output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_1/sms_rear"
+    #output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_right/"
     trip_length = 50
     box_threshold = 0.23
 

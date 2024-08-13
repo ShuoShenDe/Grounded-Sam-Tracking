@@ -10,7 +10,9 @@ def random_color():
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 
-root_path = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front"  # Adjust the path to your dataset directory
+#root_path = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front"  # Adjust the path to your dataset directory
+root_path = "/media/NAS/sd_nas_01/shuo/tracking/Grounded-SAM-2/outputs/"  # Adjust the path to your dataset directory
+
 
 json_path = os.path.join(root_path, "json_data")  # Adjust the path to your JSON file
 mask_path = os.path.join(root_path, "mask_data")  # Adjust the path to your mask file
@@ -30,6 +32,8 @@ for raw_image_name in raw_image_name_list:
     # color map
     unique_ids = np.unique(mask)
     colors = {uid: random_color() for uid in unique_ids}
+    colors[0] = (0, 0, 0)  # background color
+
     # apply mask to image
     colored_mask = np.zeros_like(image)
     for uid in unique_ids:

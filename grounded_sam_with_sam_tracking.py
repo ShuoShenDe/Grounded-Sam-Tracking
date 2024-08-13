@@ -130,7 +130,7 @@ def save_mask_data2(output_dir, mask_list, box_list, label_list, output_file_nam
         name, logit = label.split('(')
         logit = logit[:-1]  # the last is ')'
         box = box.numpy().tolist()
-        if box[3] > 1077:
+        if box[3] > 1070:
             continue
         else:
             anno_2d.append({
@@ -205,6 +205,9 @@ def sam_init():
 
 def sam2_tracking(predictor,inference_state, masks_dict_list, start_frame_idx=0, max_frame_num_to_track=10):
     predictor.reset_state(inference_state)
+    # print(" masks_dict_list ", len(masks_dict_list))
+    if len(masks_dict_list) == 0:
+        return {}
     for mask_dict in masks_dict_list:
         frame_idx, out_obj_ids, out_mask_logits = predictor.add_new_mask(
                 inference_state,
@@ -319,17 +322,17 @@ if __name__ == "__main__":
     if args.input_dir:
         input_dir = args.input_dir
     else:
-        input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/trip_full/sms_front"
+        input_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/raw_data"
     if args.output_dir:
         output_dir = args.output_dir
     else:
-        output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/trip_full/"
+        output_dir = "/media/NAS/sd_nas_01/shuo/denso_data/20240613_101744_6/sms_front/"
 
     # cfg
     config_file = "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"  # change the path of the model config file
     grounded_checkpoint = "groundingdino_swint_ogc.pth"  # change the path of the model
 
-    text_prompt = "car.pole.van.pedestrian."  # c
+    text_prompt = "Bus lane marking"  # c 
     
     device = "cuda"
     # 每10个执行一次
